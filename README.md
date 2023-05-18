@@ -19,10 +19,11 @@ dependencies {
 
 ## Usage sample
 Animation duplicates provided content and animates it on given content background.
-There is 2 base types to use:
+
+There is 2 base types to use.
 
 ### Linear
-Creates base `Linear` animation for provided content
+Creates base `Linear` animation for provided content:
 ```kotlin
         Pulsation(
             enabled = true,
@@ -41,13 +42,13 @@ Creates base `Linear` animation for provided content
             enabled = true,
             type = PulsationType.Linear(duration = 3000, delayBetweenRepeats = 1000)
         ) {
-          Image(painter = painterResource(id = R.drawable.ic_launcher_round), contentDescription = "")
+          Image(painter = painterResource(id = R.drawable.ic_launcher_round), contentDescription = null)
         }
 ```
 [device-2023-05-18-154157.webm](https://github.com/idapgroup/Pulsation/assets/12797421/8180b21c-3d82-411e-b981-970b8f8ac691)
 
 ### Iterative
-Uses animation cycles and add possibility to add delay between them.
+Uses animation cycles and add possibility to add delay between them:
 ```kotlin
         Pulsation(
             enabled = true,
@@ -59,10 +60,9 @@ Uses animation cycles and add possibility to add delay between them.
             )
         ) {
             Image(
-                modifier = Modifier
-                    .size(100.dp),
+                modifier = Modifier.size(100.dp),
                 painter = painterResource(id = R.drawable.ic_launcher_round),
-                contentDescription = ""
+                contentDescription = null
             )
         }
 ```

@@ -49,6 +49,19 @@ fun Greeting(modifier: Modifier = Modifier) {
     ) {
         Pulsation(
             enabled = true,
+            type = PulsationType.Races(
+                duration = 2500,
+                contentType = ContentType.Colored(Color.Green, CircleShape)
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Yellow, shape = CircleShape)
+                    .size(124.dp)
+            )
+        }
+        Pulsation(
+            enabled = true,
             type = PulsationType.Linear(duration = 2000, delayBetweenRepeats = 1000)
         ) {
             Box(
@@ -60,7 +73,10 @@ fun Greeting(modifier: Modifier = Modifier) {
 
         Pulsation(
             enabled = true,
-            type = PulsationType.Races(duration = 2500, contentType = ContentType.Colored(Color.Green, CircleShape))
+            type = PulsationType.Races(
+                duration = 2500,
+                contentType = ContentType.Colored(Color.Green, CircleShape)
+            )
         ) {
             Box(
                 modifier = Modifier

@@ -1,4 +1,4 @@
-package com.idapgroup.pulsation.ui.theme
+package com.idapgroup.pulsation.sample.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

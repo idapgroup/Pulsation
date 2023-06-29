@@ -1,18 +1,34 @@
 package com.idapgroup.pulsation
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -27,6 +43,7 @@ import kotlinx.coroutines.delay
 fun Pulsation(
     enabled: Boolean,
     type: PulsationType,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Pulsation(
@@ -38,6 +55,9 @@ fun Pulsation(
         delayBetweenRepeats = type.delayBetweenRepeats,
         alphaRange = type.alphaRange,
         pulseRange = type.pulseRange,
+        contentType = type.contentType,
+        wavesCount = type.wavesCount,
+        modifier = modifier,
         content = content
     )
 }
@@ -53,6 +73,7 @@ fun Pulsation(
  * @param iterationDelay - delay between iterations in 1 animation cycle.
  * @param pulseRange - range between minimum and maximum animated [content] scale.
  * @param alphaRange - range between started and ended alpha for animated [content].
+ * @param contentType - type of animated view.
  * @param content - composable content that will be drawn and copied for animation.
  */
 @Composable
@@ -63,63 +84,109 @@ fun Pulsation(
     iterations: Int,
     iterationDuration: Int,
     iterationDelay: Int,
+    wavesCount: Int,
+    modifier: Modifier = Modifier,
     pulseRange: ClosedFloatingPointRange<Float>,
     alphaRange: ClosedFloatingPointRange<Float>,
+    contentType: ContentType,
     content: @Composable () -> Unit
 ) {
-    val scale = remember { Animatable(pulseRange.start) }
-    val alpha = remember { Animatable(alphaRange.start) }
-    LaunchedEffect(scale, enabled) {
+    val animationHolder = remember {
+        List(wavesCount) {
+            AnimationHolder(
+                scale = Animatable(pulseRange.start),
+                alpha = Animatable(alphaRange.start)
+            )
+        }
+    }
+    LaunchedEffect(animationHolder, enabled) {
         while (enabled) {
             var count = 0
-            listOf(
-                async {
-                    scale.animateTo(
-                        targetValue = pulseRange.endInclusive,
-                        animationSpec = repeatable(
-                            iterations = iterations,
-                            animation = tween(
-                                durationMillis = iterationDuration,
-                                delayMillis = iterationDelay
-                            ),
-                            repeatMode = RepeatMode.Restart
+            animationHolder.flatMapIndexed { index, (scale, alpha) ->
+                listOf(
+                    async {
+                        delay((index * (iterationDuration / wavesCount)).toLong())
+                        scale.snapTo(pulseRange.start)
+                        scale.animateTo(
+                            targetValue = pulseRange.endInclusive,
+                            animationSpec = repeatable(
+                                iterations = iterations,
+                                animation = tween(
+                                    durationMillis = iterationDuration,
+                                    delayMillis =  iterationDelay
+                                ),
+                                repeatMode = RepeatMode.Restart
+                            )
                         )
-                    )
-                    scale.snapTo(pulseRange.start)
-                },
-                async {
-                    alpha.animateTo(
-                        targetValue = alphaRange.endInclusive,
-                        animationSpec = repeatable(
-                            iterations = iterations,
-                            animation = tween(
-                                durationMillis = iterationDuration,
-                                delayMillis = iterationDelay
-                            ),
-                            repeatMode = RepeatMode.Restart
+                        scale.snapTo(pulseRange.start)
+                    },
+                    async {
+                        delay((index * (iterationDuration / wavesCount)).toLong())
+                        alpha.snapTo(alphaRange.start)
+                        alpha.animateTo(
+                            targetValue = alphaRange.endInclusive,
+                            animationSpec = repeatable(
+                                iterations = iterations,
+                                animation = tween(
+                                    durationMillis = iterationDuration,
+                                    delayMillis = iterationDelay
+                                ),
+                                repeatMode = RepeatMode.Restart
+                            )
                         )
-                    )
-                    alpha.snapTo(alphaRange.start)
-                }
-            ).awaitAll()
+                    }
+                )
+            }.awaitAll()
             count += 1
             if (repeatsCount <= count) {
                 return@LaunchedEffect
             }
             delay(delayBetweenRepeats.toLong())
         }
-        scale.snapTo(pulseRange.start)
-        alpha.snapTo(alphaRange.start)
+        animationHolder.forEach { (scale, alpha) ->
+            scale.snapTo(pulseRange.start)
+            alpha.snapTo(alphaRange.start)
+        }
     }
-    Box {
-        Box(
-            modifier = Modifier
-                .scale(scale.value)
-                .alpha(alpha.value)
-        ) {
+    var size: IntSize by remember {
+        mutableStateOf(IntSize(0, 0))
+    }
+    val dpSize = with(LocalDensity.current) {
+        DpSize(width = size.width.toDp(), height = size.height.toDp())
+    }
+    Box(modifier = modifier) {
+        animationHolder.forEachIndexed { _, (scale, alpha) ->
+            Box(
+                modifier = Modifier
+                    .scale(scale.value)
+                    .alpha(alpha.value)
+            ) {
+                when (contentType) {
+                    is ContentType.Colored -> {
+                        Box(
+                            modifier = Modifier
+                                .size(dpSize)
+                                .background(contentType.color, shape = contentType.shape)
+                        )
+                    }
+
+                    ContentType.ContentTwin -> content()
+                    is ContentType.Gradient -> {
+                        Box(
+                            modifier = Modifier
+                                .size(dpSize)
+                                .background(contentType.brush, shape = contentType.shape)
+                        )
+                    }
+                }
+            }
+        }
+
+        Box(modifier = Modifier.onGloballyPositioned {
+            size = it.size
+        }) {
             content()
         }
-        content()
     }
 }
 
@@ -132,6 +199,8 @@ sealed class PulsationType(
     val iterationDuration: Int,
     val iterationDelay: Int,
     val delayBetweenRepeats: Int,
+    val contentType: ContentType,
+    val wavesCount: Int = 1,
     val pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
     val alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
 ) {
@@ -142,6 +211,7 @@ sealed class PulsationType(
         repeatsCount: Int = Int.MAX_VALUE,
         duration: Int = 500,
         delayBetweenRepeats: Int = 0,
+        contentType: ContentType = ContentType.ContentTwin,
         pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
         alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
     ) : PulsationType(
@@ -151,6 +221,7 @@ sealed class PulsationType(
         iterationDelay = 0,
         delayBetweenRepeats = delayBetweenRepeats,
         pulseRange = pulseRange,
+        contentType = contentType,
         alphaRange = alphaRange
     )
 
@@ -163,6 +234,7 @@ sealed class PulsationType(
         iterationDuration: Int = 500,
         iterationDelay: Int = 0,
         delayBetweenRepeats: Int = 500,
+        contentType: ContentType = ContentType.ContentTwin,
         pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
         alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
     ) : PulsationType(
@@ -172,18 +244,54 @@ sealed class PulsationType(
         iterationDelay = iterationDelay,
         delayBetweenRepeats = delayBetweenRepeats,
         pulseRange = pulseRange,
-        alphaRange = alphaRange
+        alphaRange = alphaRange,
+        contentType = contentType,
     )
 
     /**
      * Start of next animations before end of previous
      */
-    internal class Races // Todo: future
+    class Races(
+        duration: Int = 500,
+        wavesCount: Int = 5,
+        contentType: ContentType = ContentType.ContentTwin,
+        pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
+        alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
+    ) : PulsationType(
+        repeatsCount = Int.MAX_VALUE,
+        iterations = 1,
+        iterationDuration = duration,
+        iterationDelay = 0,//duration.div(wavesCount),
+        wavesCount = wavesCount,
+        delayBetweenRepeats = 0,
+        pulseRange = pulseRange,
+        alphaRange = alphaRange,
+        contentType = contentType,
+    )
 }
 
-//TODO: future
-internal sealed interface ViewType {
-    class Colored(val color: Color) : ViewType
-    class Gradient(val brush: Brush) : ViewType
-    object ContentTwin : ViewType
+/**
+ * Adds possibility to change animated pulsation background object
+ */
+sealed interface ContentType {
+
+    /**
+     * Creates animated object with defined color and shape.
+     */
+    class Colored(val color: Color, val shape: Shape = RectangleShape) : ContentType
+
+    /**
+     * Creates animated object with defined brush and shape
+     */
+    class Gradient(val brush: Brush, val shape: Shape = RectangleShape) : ContentType
+
+    /**
+     * Creates the same animated object as a given content
+     */
+    object ContentTwin : ContentType
 }
+
+internal data class AnimationHolder(
+    val scale: Animatable<Float, AnimationVector1D>,
+    val alpha: Animatable<Float, AnimationVector1D>
+)

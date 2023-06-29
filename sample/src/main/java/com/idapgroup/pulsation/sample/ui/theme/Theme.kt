@@ -1,4 +1,4 @@
-package com.idapgroup.pulsation.ui.theme
+package com.idapgroup.pulsation.sample.ui.theme
 
 import android.app.Activity
 import android.os.Build

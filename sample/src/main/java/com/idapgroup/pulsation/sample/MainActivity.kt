@@ -1,4 +1,4 @@
-package com.idapgroup.pulsation
+package com.idapgroup.pulsation.sample
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,7 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.idapgroup.pulsation.ui.theme.PulsationTheme
+import com.idapgroup.pulsation.ContentType
+import com.idapgroup.pulsation.Pulsation
+import com.idapgroup.pulsation.PulsationType
+import com.idapgroup.pulsation.sample.ui.theme.PulsationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    Greeting()
                 }
             }
         }
@@ -38,34 +41,55 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.padding(top = 40.dp),
+        modifier = modifier.padding(top = 40.dp),
         verticalArrangement = Arrangement.spacedBy(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Pulsation(enabled = true, type = PulsationType.Linear()) {
-            Box(
-                modifier = Modifier
-                    .background(Color.Blue, shape = CircleShape)
-                    .size(64.dp)
-            )
-        }
         Pulsation(
             enabled = true,
             type = PulsationType.Linear(duration = 2000, delayBetweenRepeats = 1000)
         ) {
             Box(
                 modifier = Modifier
+                    .background(Color.Blue, shape = CircleShape)
+                    .size(124.dp)
+            )
+        }
+
+        Pulsation(
+            enabled = true,
+            type = PulsationType.Races(duration = 2500, contentType = ContentType.Colored(Color.Green, CircleShape))
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Yellow, shape = CircleShape)
+                    .size(124.dp)
+            )
+        }
+        Pulsation(
+            enabled = true,
+            type = PulsationType.Linear(
+                duration = 2000,
+                delayBetweenRepeats = 1000,
+                contentType = ContentType.Colored(
+                    Color.DarkGray,
+                    CircleShape
+                )
+            )
+        ) {
+            Box(
+                modifier = Modifier
                     .background(Color.Red, shape = CircleShape)
-                    .size(64.dp)
+                    .size(124.dp)
             )
         }
         Pulsation(enabled = true, type = PulsationType.Iterative()) {
             Box(
                 modifier = Modifier
                     .background(Color.Green, shape = CircleShape)
-                    .size(64.dp)
+                    .size(124.dp)
             )
         }
         Pulsation(
@@ -79,8 +103,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         ) {
             Box(
                 modifier = Modifier
-                    .background(Color.White, shape = CircleShape)
-                    .size(64.dp)
+                    .background(Color.Black, shape = CircleShape)
+                    .size(124.dp)
             )
         }
     }
@@ -92,7 +116,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     PulsationTheme {
-        Greeting("Android")
+        Greeting()
     }
 }
 

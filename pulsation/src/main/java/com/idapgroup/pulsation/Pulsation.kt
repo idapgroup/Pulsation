@@ -1,6 +1,5 @@
 package com.idapgroup.pulsation
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.RepeatMode
@@ -9,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,7 +25,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -40,7 +36,7 @@ import kotlinx.coroutines.delay
  * @param content - composable content that will be drawn and copied for animation.
  */
 @Composable
-fun Pulsation(
+public fun Pulsation(
     enabled: Boolean,
     type: PulsationType,
     modifier: Modifier = Modifier,
@@ -77,7 +73,7 @@ fun Pulsation(
  * @param content - composable content that will be drawn and copied for animation.
  */
 @Composable
-fun Pulsation(
+public fun Pulsation(
     enabled: Boolean,
     repeatsCount: Int,
     delayBetweenRepeats: Int,
@@ -193,21 +189,21 @@ fun Pulsation(
 /**
  * Top level declaration of animation type for simplified usages of animation params
  */
-sealed class PulsationType(
-    val repeatsCount: Int,
-    val iterations: Int,
-    val iterationDuration: Int,
-    val iterationDelay: Int,
-    val delayBetweenRepeats: Int,
-    val contentType: ContentType,
-    val wavesCount: Int = 1,
-    val pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
-    val alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
+public sealed class PulsationType(
+    public val repeatsCount: Int,
+    public val iterations: Int,
+    public val iterationDuration: Int,
+    public val iterationDelay: Int,
+    public val delayBetweenRepeats: Int,
+    public val contentType: ContentType,
+    public val wavesCount: Int = 1,
+    public val pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
+    public val alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
 ) {
     /**
      * Linear animation type
      */
-    class Linear(
+    public class Linear(
         repeatsCount: Int = Int.MAX_VALUE,
         duration: Int = 500,
         delayBetweenRepeats: Int = 0,
@@ -228,7 +224,7 @@ sealed class PulsationType(
     /**
      * Added possibility to make animation cycles inside animation process.
      */
-    class Iterative(
+    public class Iterative(
         repeatCount: Int = Int.MAX_VALUE,
         iterations: Int = 3,
         iterationDuration: Int = 500,
@@ -251,12 +247,12 @@ sealed class PulsationType(
     /**
      * Start of next animations before end of previous
      */
-    class Races(
+    public class Races(
         duration: Int = 500,
         wavesCount: Int = 5,
         contentType: ContentType = ContentType.ContentTwin,
         pulseRange: ClosedFloatingPointRange<Float> = 1f..1.4f,
-        alphaRange: ClosedFloatingPointRange<Float> = 1f..0f,
+        alphaRange: ClosedFloatingPointRange<Float> = 1f .. 0f,
     ) : PulsationType(
         repeatsCount = Int.MAX_VALUE,
         iterations = 1,
@@ -273,22 +269,22 @@ sealed class PulsationType(
 /**
  * Adds possibility to change animated pulsation background object
  */
-sealed interface ContentType {
+public sealed interface ContentType {
 
     /**
      * Creates animated object with defined color and shape.
      */
-    class Colored(val color: Color, val shape: Shape = RectangleShape) : ContentType
+    public class Colored(public val color: Color, public val shape: Shape = RectangleShape) : ContentType
 
     /**
      * Creates animated object with defined brush and shape
      */
-    class Gradient(val brush: Brush, val shape: Shape = RectangleShape) : ContentType
+    public class Gradient(public val brush: Brush, public val shape: Shape = RectangleShape) : ContentType
 
     /**
      * Creates the same animated object as a given content
      */
-    object ContentTwin : ContentType
+    public data object ContentTwin : ContentType
 }
 
 internal data class AnimationHolder(

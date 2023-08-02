@@ -12,7 +12,7 @@ repositories {
 Add to your module next dependency:
 ```groovy
 dependencies {
-  implementation 'com.github.idapgroup:Pulsation:0.1.0'
+  implementation 'com.github.idapgroup:Pulsation:0.2.0'
 }
 ```
 `Note:` Do not forget to add compose dependencies 🙃
@@ -20,7 +20,7 @@ dependencies {
 ## Usage sample
 Animation duplicates provided content and animates it on given content background.
 
-There is 2 base types to use.
+There is 3 base types to use.
 
 ### Linear
 Creates base `Linear` animation for provided content:
@@ -67,5 +67,29 @@ Uses animation cycles and add possibility to add delay between them:
         }
 ```
 [device-2023-05-18-155303.webm](https://github.com/idapgroup/Pulsation/assets/12797421/633f5176-936f-485b-9122-cbcb1dc766a3)
+
+### Races
+Uses waving animation behavior:
+```kotlin
+        Pulsation(
+            enabled = true,
+            type = PulsationType.Races(
+                duration = 2500,
+                contentType = ContentType.Colored(Color.Green, CircleShape)
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Yellow, shape = CircleShape)
+                    .size(124.dp)
+            )
+        }
+```
+[device-2023-06-29-172707.webm](https://github.com/idapgroup/Pulsation/assets/12797421/5025fe43-84ab-4825-ba67-a02cea81b482)
+
+
+## ContentType
+Also was added a new animation object behavior: `ContentType`.
+It gives you an ability to change background pulsation view type.
 
 

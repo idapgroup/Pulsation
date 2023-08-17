@@ -12,7 +12,7 @@ repositories {
 Add to your module next dependency:
 ```groovy
 dependencies {
-  implementation 'com.github.idapgroup:Pulsation:0.2.0'
+  implementation 'com.github.idapgroup:Pulsation:0.2.2'
 }
 ```
 `Note:` Do not forget to add compose dependencies 🙃

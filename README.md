@@ -1,4 +1,6 @@
 # Pulsation
+![Release](https://img.shields.io/github/v/release/idapgroup/Pulsation)
+
 Android compose pulsation (waving, pulsating, reveal) animation
 ## Setup
 Please, add to repositories jitpack:
@@ -12,7 +14,7 @@ repositories {
 Add to your module next dependency:
 ```groovy
 dependencies {
-  implementation 'com.github.idapgroup:Pulsation:0.2.5'
+  implementation 'com.github.idapgroup:Pulsation:<latest-version>'
 }
 ```
 `Note:` Do not forget to add compose dependencies 🙃
